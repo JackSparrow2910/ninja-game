@@ -71,14 +71,18 @@ class Ninja: public Object
         }
 };
 
+
+
 class Shuriken: public Object
 {
     public:
+        string ability="shuriken";
         float move_x, move_y;
+        float angle;
         
-        float ninja_x_for_homing,ninja_y_for_homing;
-        Shuriken(Texture& texture, sf::Vector2f size, sf::Vector2f pos, float speed)
-            : Object(texture, size, pos, speed) 
+        float ninja_x_for_shuriken,ninja_y_for_shuriken;
+        Shuriken(Texture& texture, sf::Vector2f size, sf::Vector2f pos, float speed) 
+            : Object(texture, size, pos, speed)
         {
             Shuriken::Spawn();
         }
@@ -115,8 +119,8 @@ class Shuriken: public Object
     void Find_Ninja(Ninja& ninja)
         {
             sf::Vector2f ninja_pos = ninja.sprite.getPosition();
-            ninja_x_for_homing=ninja_pos.x;
-            ninja_y_for_homing=ninja_pos.y;
+            ninja_x_for_shuriken=ninja_pos.x;
+            ninja_y_for_shuriken=ninja_pos.y;
         }
     
     virtual void Move()
@@ -131,6 +135,14 @@ class Shuriken: public Object
         if (sprite.getPosition().x<0 || sprite.getPosition().x>1200 || sprite.getPosition().y<0 || sprite.getPosition().y>900) return true;
         return false;
     }
+
+    bool Separate()
+        {
+            if (sprite.getPosition().x<=ninja_x_for_shuriken+150 && sprite.getPosition().x>=ninja_x_for_shuriken-150 && sprite.getPosition().y<=ninja_y_for_shuriken+150 && sprite.getPosition().y>=ninja_y_for_shuriken-150) { return true;
+            cout<<"Condition is working!"<<endl;}
+            return false;
+            
+        }
 
     void Set_Angle(int a)
     {
@@ -151,12 +163,13 @@ class Shuriken: public Object
         bool shuriken_x;
         bool shuriken_y;
         int a1,a2;
-        float angle;
+        
 };
 
 class FastShuriken: public Shuriken
 {
     public:
+        string ability="fast";
         FastShuriken(Texture& texture, sf::Vector2f size, sf::Vector2f pos, float speed)
             : Shuriken(texture, size, pos, speed*3) 
         {
@@ -166,6 +179,7 @@ class FastShuriken: public Shuriken
 class ChaoticShuriken: public Shuriken
 {
     public:
+        string ability="chaotic";
         ChaoticShuriken(Texture& texture, sf::Vector2f size, sf::Vector2f pos, float speed)
             : Shuriken(texture, size, pos, speed) 
         {
@@ -179,7 +193,6 @@ class ChaoticShuriken: public Shuriken
             if (clock_angle.getElapsedTime().asSeconds()>0.35)
             {
                 srand(time(NULL));
-                cout<<rand()%360<<endl;
                 Set_Angle(rand()%360);
                 clock_angle.restart();
                 
@@ -200,7 +213,7 @@ class HomingShuriken: public Shuriken
         {
             float shuriken_pos_x = sprite.getPosition().x;
             float shuriken_pos_y = sprite.getPosition().y;
-            return Vector2f(ninja_x_for_homing-shuriken_pos_x,ninja_y_for_homing-shuriken_pos_y);
+            return Vector2f(ninja_x_for_shuriken-shuriken_pos_x,ninja_y_for_shuriken-shuriken_pos_y);
         }
 
         
@@ -222,6 +235,7 @@ class HomingShuriken: public Shuriken
         }
     
     public:
+        string ability="homing";
         HomingShuriken(Texture& texture, sf::Vector2f size, sf::Vector2f pos, float speed)
             : Shuriken(texture, size, pos, speed)
         {
@@ -238,6 +252,20 @@ class HomingShuriken: public Shuriken
 
 
     }
+};
+
+class SeparateShuriken: public Shuriken
+{
+    public:
+        string ability="separate";
+        SeparateShuriken(Texture& texture, sf::Vector2f size, sf::Vector2f pos, float speed)
+            : Shuriken(texture, size, pos, speed) 
+        {
+            
+        }
+
+        
+
 };
 
 
@@ -262,12 +290,14 @@ int main()
 
     srand(time(NULL));
     int randshuriken;
+    int randshuriken1, randshuriken2, randshuriken3;
 
-    Texture textureshuriken1, textureshuriken2,textureshuriken3,textureshuriken4;
+    Texture textureshuriken1, textureshuriken2,textureshuriken3,textureshuriken4,textureshuriken5;
     textureshuriken1.loadFromFile("Images\\shuriken.png");
     textureshuriken2.loadFromFile("Images\\fast_shuriken.png");
     textureshuriken3.loadFromFile("Images\\chaotic_shuriken.png");
     textureshuriken4.loadFromFile("Images\\homing_shuriken.png");
+    textureshuriken5.loadFromFile("Images\\separate_shuriken.png");
     vector<Shuriken*> shurikens;
 
     Text text;
@@ -289,20 +319,37 @@ int main()
         move_shuriken=SPEED_SHURIKEN*deltatime;
         if (clockspawn.getElapsedTime().asSeconds()>1.5)
         {
-            randshuriken=rand()%4;
+            randshuriken=4;
             switch(randshuriken)
             {
                 case 0:
-                    shurikens.push_back(new Shuriken(textureshuriken1, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken));
+                    Shuriken* shuriken;
+                    shuriken = new Shuriken(textureshuriken1, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                    shurikens.push_back(shuriken);
                     break;
                 case 1:
-                    shurikens.push_back(new FastShuriken(textureshuriken2, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken));
+                    Shuriken* fast;
+                    fast = new FastShuriken(textureshuriken2, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                    shurikens.push_back(fast);
+                    fast->ability="fast";
                     break;
                 case 2:
-                    shurikens.push_back(new ChaoticShuriken(textureshuriken3, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken));
+                    Shuriken* chaotic;
+                    chaotic = new ChaoticShuriken(textureshuriken3, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                    shurikens.push_back(chaotic);
+                    chaotic->ability="chaotic";
                     break;
                 case 3:
-                    shurikens.push_back(new HomingShuriken(textureshuriken4, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken));
+                    Shuriken* homing;
+                    homing = new HomingShuriken(textureshuriken4, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                    shurikens.push_back(homing);
+                    homing->ability="homing";
+                    break;
+                case 4:
+                    Shuriken* separate;
+                    separate = new SeparateShuriken(textureshuriken5, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                    shurikens.push_back(separate);
+                    separate->ability="separate";
                     break;
             }
             clockspawn.restart();
@@ -316,7 +363,139 @@ int main()
             shurikens[i]->Find_Ninja(ninja);
             shurikens[i]->Move();
             shurikens[i]->Draw(window);
-            
+            cout<<shurikens[i]->ability<<endl;
+            if (shurikens[i]->Separate()&&shurikens[i]->ability=="separate") {
+                randshuriken1=rand()%5;
+                randshuriken2=rand()%5;
+                randshuriken3=rand()%5;
+                switch (randshuriken1)
+                {
+                    case 0:
+                        Shuriken* shuriken;
+                        shuriken = new Shuriken(textureshuriken1, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(shuriken);
+                        shuriken->Set_Angle(shurikens[i]->angle+45);
+                        shuriken->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 1:
+                        Shuriken* fast;
+                        fast = new FastShuriken(textureshuriken2, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(fast);
+                        fast->ability="fast";
+                        fast->Set_Angle(shurikens[i]->angle+45);
+                        fast->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 2:
+                        Shuriken* chaotic;
+                        chaotic = new ChaoticShuriken(textureshuriken3, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(chaotic);
+                        chaotic->ability="chaotic";
+                        chaotic->Set_Angle(shurikens[i]->angle+45);
+                        chaotic->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 3:
+                        Shuriken* homing;
+                        homing = new HomingShuriken(textureshuriken4, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(homing);
+                        homing->ability="homing";
+                        homing->Set_Angle(shurikens[i]->angle+45);
+                        homing->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 4:
+                        Shuriken* separate;
+                        separate = new SeparateShuriken(textureshuriken5, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(separate);
+                        separate->ability="separate";
+                        separate->Set_Angle(shurikens[i]->angle+45);
+                        separate->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                }
+                switch (randshuriken2)
+                {
+                    case 0:
+                        Shuriken* shuriken;
+                        shuriken = new Shuriken(textureshuriken1, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(shuriken);
+                        shuriken->Set_Angle(shurikens[i]->angle);
+                        shuriken->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 1:
+                        Shuriken* fast;
+                        fast = new FastShuriken(textureshuriken2, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(fast);
+                        fast->ability="fast";
+                        fast->Set_Angle(shurikens[i]->angle);
+                        fast->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 2:
+                        Shuriken* chaotic;
+                        chaotic = new ChaoticShuriken(textureshuriken3, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(chaotic);
+                        chaotic->ability="chaotic";
+                        chaotic->Set_Angle(shurikens[i]->angle);
+                        chaotic->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 3:
+                        Shuriken* homing;
+                        homing = new HomingShuriken(textureshuriken4, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(homing);
+                        homing->ability="homing";
+                        homing->Set_Angle(shurikens[i]->angle);
+                        homing->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 4:
+                        Shuriken* separate;
+                        separate = new SeparateShuriken(textureshuriken5, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(separate);
+                        separate->ability="separate";
+                        separate->Set_Angle(shurikens[i]->angle);
+                        separate->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                }
+                switch (randshuriken3)
+                {
+                    case 0:
+                        Shuriken* shuriken;
+                        shuriken = new Shuriken(textureshuriken1, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(shuriken);
+                        shuriken->Set_Angle(shurikens[i]->angle+45);
+                        shuriken->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 1:
+                        Shuriken* fast;
+                        fast = new FastShuriken(textureshuriken2, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(fast);
+                        fast->ability="fast";
+                        fast->Set_Angle(shurikens[i]->angle+45);
+                        fast->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 2:
+                        Shuriken* chaotic;
+                        chaotic = new ChaoticShuriken(textureshuriken3, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(chaotic);
+                        chaotic->ability="chaotic";
+                        chaotic->Set_Angle(shurikens[i]->angle+45);
+                        chaotic->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 3:
+                        Shuriken* homing;
+                        homing = new HomingShuriken(textureshuriken4, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(homing);
+                        homing->ability="homing";
+                        homing->Set_Angle(shurikens[i]->angle+45);
+                        homing->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 4:
+                        Shuriken* separate;
+                        separate = new SeparateShuriken(textureshuriken5, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(separate);
+                        separate->ability="separate";
+                        separate->Set_Angle(shurikens[i]->angle+45);
+                        separate->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                }
+                shurikens.erase(shurikens.begin()+i);
+            }
         }
         for (int i=shurikens.size()-1;i>=0;i--)
         {
@@ -332,10 +511,11 @@ int main()
                 while (clock.getElapsedTime().asSeconds() < 2)
                 {
                    window.clear(sf::Color::Yellow);
-                   
+                   cout<<"Cycle"<<endl;
                     window.draw(text);
                     window.display(); /* code */
                 }
+                clock.restart();
                 
             }
         }
