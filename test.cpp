@@ -74,6 +74,9 @@ class Ninja: public Object
 class Shuriken: public Object
 {
     public:
+        float move_x, move_y;
+        
+        float ninja_x_for_homing,ninja_y_for_homing;
         Shuriken(Texture& texture, sf::Vector2f size, sf::Vector2f pos, float speed)
             : Object(texture, size, pos, speed) 
         {
@@ -108,10 +111,19 @@ class Shuriken: public Object
         sprite.setPosition(pos);
 
     }
+
+    void Find_Ninja(Ninja& ninja)
+        {
+            sf::Vector2f ninja_pos = ninja.sprite.getPosition();
+            ninja_x_for_homing=ninja_pos.x;
+            ninja_y_for_homing=ninja_pos.y;
+        }
     
     virtual void Move()
     {
-        sprite.move(speed*cos(angle), speed*sin(angle));
+        move_x=speed*cos(angle);
+        move_y=speed*sin(angle);
+        sprite.move(move_x, move_y);
     }
 
     bool Destroy()
@@ -163,19 +175,71 @@ class ChaoticShuriken: public Shuriken
         virtual void Move() override
         {
             
-            if (clock_angle.getElapsedTime().asSeconds()>0.5)
+            Shuriken::Move();
+            if (clock_angle.getElapsedTime().asSeconds()>0.35)
             {
                 srand(time(NULL));
+                cout<<rand()%360<<endl;
                 Set_Angle(rand()%360);
                 clock_angle.restart();
                 
             }
-            Shuriken::Move();
+            
         }
     private:
         sf::Clock clock_angle;
 
 };
+
+class HomingShuriken: public Shuriken
+{
+    private:
+        Clock clock_homing;
+        
+        Vector2f Find_Vector()
+        {
+            float shuriken_pos_x = sprite.getPosition().x;
+            float shuriken_pos_y = sprite.getPosition().y;
+            return Vector2f(ninja_x_for_homing-shuriken_pos_x,ninja_y_for_homing-shuriken_pos_y);
+        }
+
+        
+        
+        
+        void Find_Angle(Vector2f vector)
+        {
+            float dot_product=vector.x*move_x+vector.y*move_y;
+            float module_vector1=sqrt(vector.x*vector.x+vector.y*vector.y);
+            float module_vector2=sqrt(move_x*move_x+move_y*move_y);
+            float a=abs(acos(dot_product/(module_vector1*module_vector2)));
+            float cross_product=vector.x*move_y-vector.y*move_x;
+            if (a>=pi/180.0f)
+            {
+                
+                if (cross_product<0) Right_Rotate(15);
+                else Left_Rotate(15);
+            }
+        }
+    
+    public:
+        HomingShuriken(Texture& texture, sf::Vector2f size, sf::Vector2f pos, float speed)
+            : Shuriken(texture, size, pos, speed)
+        {
+            clock_homing.restart();
+        }
+    virtual void Move() override
+    {
+        Shuriken::Move();
+        if (clock_homing.getElapsedTime().asSeconds()>0.25)
+        {
+            Find_Angle(Find_Vector());
+            clock_homing.restart();
+        }
+
+
+    }
+};
+
 
 
 int main()
@@ -184,7 +248,6 @@ int main()
     Clock clockFPS;
     Clock clock;
     float deltatime;
-
 
     const float SPEED_NINJA = 5.0f;
     const float SPEED_SHURIKEN = 5.0f;
@@ -200,10 +263,11 @@ int main()
     srand(time(NULL));
     int randshuriken;
 
-    Texture textureshuriken1, textureshuriken2,textureshuriken3;
+    Texture textureshuriken1, textureshuriken2,textureshuriken3,textureshuriken4;
     textureshuriken1.loadFromFile("Images\\shuriken.png");
     textureshuriken2.loadFromFile("Images\\fast_shuriken.png");
     textureshuriken3.loadFromFile("Images\\chaotic_shuriken.png");
+    textureshuriken4.loadFromFile("Images\\homing_shuriken.png");
     vector<Shuriken*> shurikens;
 
     Text text;
@@ -225,7 +289,7 @@ int main()
         move_shuriken=SPEED_SHURIKEN*deltatime;
         if (clockspawn.getElapsedTime().asSeconds()>1.5)
         {
-            randshuriken=rand()%3;
+            randshuriken=rand()%4;
             switch(randshuriken)
             {
                 case 0:
@@ -237,6 +301,9 @@ int main()
                 case 2:
                     shurikens.push_back(new ChaoticShuriken(textureshuriken3, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken));
                     break;
+                case 3:
+                    shurikens.push_back(new HomingShuriken(textureshuriken4, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken));
+                    break;
             }
             clockspawn.restart();
         }
@@ -246,6 +313,7 @@ int main()
         for (int i=0;i<shurikens.size();i++)
 
         {
+            shurikens[i]->Find_Ninja(ninja);
             shurikens[i]->Move();
             shurikens[i]->Draw(window);
             
