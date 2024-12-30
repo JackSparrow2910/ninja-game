@@ -268,6 +268,20 @@ class SeparateShuriken: public Shuriken
 
 };
 
+class CloneShuriken: public Shuriken
+{
+    public:
+        string ability="clone";
+        CloneShuriken(Texture& texture, sf::Vector2f size, sf::Vector2f pos, float speed)
+            : Shuriken(texture, size, pos, speed) 
+        {
+            
+        }
+
+
+};
+
+
 
 
 int main()
@@ -275,6 +289,7 @@ int main()
     Clock clockspawn;
     Clock clockFPS;
     Clock clock;
+    Clock clockclone;
     float deltatime;
 
     const float SPEED_NINJA = 5.0f;
@@ -292,12 +307,13 @@ int main()
     int randshuriken;
     int randshuriken1, randshuriken2, randshuriken3;
 
-    Texture textureshuriken1, textureshuriken2,textureshuriken3,textureshuriken4,textureshuriken5;
+    Texture textureshuriken1, textureshuriken2,textureshuriken3,textureshuriken4,textureshuriken5,textureshuriken6;
     textureshuriken1.loadFromFile("Images\\shuriken.png");
     textureshuriken2.loadFromFile("Images\\fast_shuriken.png");
     textureshuriken3.loadFromFile("Images\\chaotic_shuriken.png");
     textureshuriken4.loadFromFile("Images\\homing_shuriken.png");
     textureshuriken5.loadFromFile("Images\\separate_shuriken.png");
+    textureshuriken6.loadFromFile("Images\\clone_shuriken.png");
     vector<Shuriken*> shurikens;
 
     Text text;
@@ -317,9 +333,10 @@ int main()
         clockFPS.restart();
         move_ninja=SPEED_NINJA*deltatime;
         move_shuriken=SPEED_SHURIKEN*deltatime;
+        window.clear(sf::Color::Green);
         if (clockspawn.getElapsedTime().asSeconds()>1.5)
         {
-            randshuriken=4;
+            randshuriken=5;
             switch(randshuriken)
             {
                 case 0:
@@ -351,10 +368,16 @@ int main()
                     shurikens.push_back(separate);
                     separate->ability="separate";
                     break;
+                case 5:
+                    Shuriken* clone;
+                    clone = new CloneShuriken(textureshuriken6, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                    shurikens.push_back(clone);
+                    clone->ability="clone";
+                    break;
             }
             clockspawn.restart();
         }
-        window.clear(sf::Color::Yellow);
+        
         ninja.speed=move_ninja;
         ninja.Move();
         for (int i=0;i<shurikens.size();i++)
@@ -364,7 +387,8 @@ int main()
             shurikens[i]->Move();
             shurikens[i]->Draw(window);
             cout<<shurikens[i]->ability<<endl;
-            if (shurikens[i]->Separate()&&shurikens[i]->ability=="separate") {
+            if (shurikens[i]->Separate()&&shurikens[i]->ability=="separate") 
+            {
                 randshuriken1=rand()%5;
                 randshuriken2=rand()%5;
                 randshuriken3=rand()%5;
@@ -409,6 +433,14 @@ int main()
                         separate->Set_Angle(shurikens[i]->angle+45);
                         separate->sprite.setPosition(shurikens[i]->sprite.getPosition());
                         break;
+                    case 5:
+                        Shuriken* clone;
+                        clone = new CloneShuriken(textureshuriken6, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(clone);
+                        clone->ability="clone";
+                        clone->Set_Angle(shurikens[i]->angle+45);
+                        clone->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
                 }
                 switch (randshuriken2)
                 {
@@ -450,6 +482,14 @@ int main()
                         separate->ability="separate";
                         separate->Set_Angle(shurikens[i]->angle);
                         separate->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 5:
+                        Shuriken* clone;
+                        clone = new CloneShuriken(textureshuriken6, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(clone);
+                        clone->ability="clone";
+                        clone->Set_Angle(shurikens[i]->angle);
+                        clone->sprite.setPosition(shurikens[i]->sprite.getPosition());
                         break;
                 }
                 switch (randshuriken3)
@@ -493,28 +533,93 @@ int main()
                         separate->Set_Angle(shurikens[i]->angle+45);
                         separate->sprite.setPosition(shurikens[i]->sprite.getPosition());
                         break;
+                    case 5:
+                        Shuriken* clone;
+                        clone = new CloneShuriken(textureshuriken6, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(clone);
+                        clone->ability="clone";
+                        clone->Set_Angle(shurikens[i]->angle+45);
+                        clone->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
                 }
                 shurikens.erase(shurikens.begin()+i);
             }
+                
+                
+            if (shurikens[i]->ability=="clone"&&clockclone.getElapsedTime().asSeconds()>0.5)
+            {
+                
+                randshuriken=rand()%6;
+                switch (randshuriken)
+                {
+                    case 0:
+                        Shuriken* shuriken;
+                        shuriken = new Shuriken(textureshuriken1, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(shuriken);
+                        shuriken->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 1:
+                        Shuriken* fast;
+                        fast = new FastShuriken(textureshuriken2, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(fast);
+                        fast->ability="fast";
+                        fast->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 2:
+                        Shuriken* chaotic;
+                        chaotic = new ChaoticShuriken(textureshuriken3, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(chaotic);
+                        chaotic->ability="chaotic";
+                        chaotic->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 3:
+                        Shuriken* homing;
+                        homing = new HomingShuriken(textureshuriken4, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(homing);
+                        homing->ability="homing";
+                        homing->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 4:
+                        Shuriken* separate; 
+                        separate = new SeparateShuriken(textureshuriken5, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(separate);
+                        separate->ability="separate";
+                        separate->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                    case 5:
+                        Shuriken* clone;
+                        clone = new CloneShuriken(textureshuriken6, sf::Vector2f(50, 50),sf::Vector2f(1,1),move_shuriken);
+                        shurikens.push_back(clone);
+                        clone->ability="clone";
+                        clone->sprite.setPosition(shurikens[i]->sprite.getPosition());
+                        break;
+                }
+            
+                clockclone.restart();
+            }
         }
+
         for (int i=shurikens.size()-1;i>=0;i--)
         {
             if (shurikens[i]->Destroy()) shurikens.erase(shurikens.begin()+i);
             if (ninja.isCollide(*(shurikens[i])))
             {
+                shurikens.clear();
                 clock.restart();
                 text.setString("Game Over");
                 text.setCharacterSize(50);
                 text.setPosition(400, 400);
                 
-                shurikens.clear();
+                
                 while (clock.getElapsedTime().asSeconds() < 2)
                 {
                    window.clear(sf::Color::Yellow);
-                   cout<<"Cycle"<<endl;
+                   cout<<clock.getElapsedTime().asSeconds()<<endl;
                     window.draw(text);
                     window.display(); /* code */
                 }
+                shurikens.clear();
+                ninja.sprite.setPosition(400, 400);
                 clock.restart();
                 
             }
